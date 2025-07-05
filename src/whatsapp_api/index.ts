@@ -58,26 +58,30 @@ export async function getChatMessages(model: Model<any,any>, chatId: string, cou
     const client = clients[ clientId ?? ''];
     if(!client) return false;
     const chat = await client.getChatById(chatId);
+
     if(!chat) return false;
-    return (await chat.fetchMessages({
-        limit: count
-    })).forEach(async msg => {
-        const infos = await msg.getInfo();
-        return {
+    const msgs = await chat.fetchMessages({limit: count})
+    console.log(msgs);
+
+    const m = [];
+    for (const msg of msgs) {
+        // const infos = await msg.getInfo();
+        m.push( {
             'id': msg.id._serialized,
-            'author': msg.fromMe ? null : (chat.isGroup ? msg.author : chat.name),
+            'author': msg.from,
             'body': msg.body,
             'type': msg.type,
-            'info': infos ? {
-                'deliverd': infos.delivery.length > 0,
-                'read': infos.read.length > 0,
-                'played': infos.played.length > 0
-
-            } : {},
+            // 'info': infos ? {
+            //     'deliverd': infos.delivery.length > 0,
+            //     'read': infos.read.length > 0,
+            //     'played': infos.played.length > 0
+            //
+            // } : {},
             'isForwarded': msg.isForwarded,
             'timestamp': new Date(msg.timestamp * 1000),
-        }
-    });
+        })
+    }
+    return m;
 }
 
 export function start_client(clientId: string, clientModel: Model) {
@@ -198,7 +202,7 @@ export async function createClient(clientId: string) {
             case 'PAYMENT':
             case 'GROUP_NOTIFICATION':
             case 'NOTIFICATION':
-                console.log(msg)
+                // console.log(msg)
                 break;
             default:
                 break;

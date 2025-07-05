@@ -6,7 +6,7 @@ import QRCode from 'qrcode';
 
 export const port: number = parseInt(process.env.PORT ?? '3000');
 const server = express()
-server.use(express.json());
+server.use(express.json()); 
 
 export default server;
 
@@ -75,7 +75,7 @@ export async function createWebServer () {
 
         if(!client || !client.get('ready'))return res.status(404).send('Not found');
 
-        const chats = getChats(client);
+        const chats = await getChats(client);
 
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(chats));
@@ -97,15 +97,15 @@ export async function createWebServer () {
     })
 
     // get chat messages
-    server.get('/client/:clientId/chat/:chatId/messages',async (req: Request, res: Response) => {
+    server.post('/client/:clientId/chat/messages',async (req: Request, res: Response) => {
         const id = req.params.clientId;
         const client = await Client.findByPk(id);
 
         if(!client || !client.get('ready'))return res.status(404).send('Not found');
 
-        const chatId = req.params.chatId;
+        const chatId = req.body.chatId;
 
-        const messages = getChatMessages(client,chatId,200);
+        const messages = await getChatMessages(client,chatId,200);
 
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(messages));
