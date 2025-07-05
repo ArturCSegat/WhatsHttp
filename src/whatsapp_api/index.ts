@@ -15,22 +15,22 @@ export async function sendMessage(model: Model<any,any>, chatId: string, message
     const client = clients[ clientId ?? ''];
     if(!client) return false;
 
-    const chat = await client.getChatById(chatId);
+    const msg = await client.sendMessage(chatId, message);
+    // const infos = await msg.getInfo();
 
-    if(!chat) return false;
+    console.log(msg);
+    // console.log(infos);
 
-    const msg = await chat.sendMessage(message,{});
-    const infos = await msg.getInfo();
     return {
-        'id': msg.id._serialized,
-        'author': msg.fromMe ? null : (chat.isGroup ? msg.author : chat.name),
+        'id': msg.id,
+        'author': null,
         'body': msg.body,
         'type': msg.type,
-        'info': infos ? {
-            'deliverd': infos.delivery.length > 0,
-            'read': infos.read.length > 0,
-            'played': infos.played.length > 0
-        } : {},
+        // 'info': infos ? {
+        //     'deliverd': infos.delivery.length > 0,
+        //     'read': infos.read.length > 0,
+        //     'played': infos.played.length > 0
+        // } : {},
         'isForwarded': msg.isForwarded,
         'timestamp': new Date(msg.timestamp * 1000),
     }
@@ -78,6 +78,69 @@ export async function getChatMessages(model: Model<any,any>, chatId: string, cou
             'timestamp': new Date(msg.timestamp * 1000),
         }
     });
+}
+
+export function start_client(clientId: string, clientModel: Model) {
+    const client = new Client({
+        authStrategy: new LocalAuth({
+            dataPath: './data/',
+            clientId: clientId
+        }),
+        puppeteer: {
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        }
+    });
+
+    client.on('remote_session_saved', () => {
+        clientModel.set({
+            ready: true
+        })
+        clientModel.save();
+    });
+    
+    client.on('qr', (qr) => {
+        clientModel.set({
+            qrCode: qr
+        })
+        clientModel.save();
+    });
+    
+    client.on('ready', () => {
+        clientModel.set({
+            ready: true
+        })
+        clientModel.save();
+    });
+    
+    client.on('message', msg => {
+        switch(msg.type.toUpperCase()){
+            case 'TEXT':
+                if (msg.body == '!ping') {
+                    msg.reply('pong: '+msg.from);
+                }
+                break;
+            case 'AUDIO':
+            case 'VOICE':
+            case 'IMAGE':
+            case 'VIDEO':
+            case 'DOCUMENT':
+            case 'STICKER':
+            case 'LOCATION':
+            case 'GROUP_INVITE':
+            case 'BUTTONS_RESPONSE':
+            case 'PAYMENT':
+            case 'GROUP_NOTIFICATION':
+            case 'NOTIFICATION':
+                console.log(msg)
+                break;
+            default:
+                break;
+        }
+
+    });
+    
+    client.initialize();
+    clients[clientId] = client
 }
 
 
