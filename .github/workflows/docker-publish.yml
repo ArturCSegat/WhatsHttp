@@ -3,33 +3,32 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main  # Trigger only on push to main branch
+      - main
 
 jobs:
   docker:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the source code
-      - name: Checkout code
+      # Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Log in to Docker Hub
+      # Login to Docker Hub (corrected)
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 3: Extract Docker image tag from commit SHA
-      - name: Set up image tag
-        id: vars
-        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      # Step 4: Build the Docker image
+      # Build the Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/whatshttp:latest .
+                      
 
-      # Step 5: Push Docker images to Docker Hub
-      - name: Push Docker images
+      # Push Docker image
+      - name: Push Docker image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/whatshttp:latest
-
