@@ -21,17 +21,17 @@ To run this container, you will need to have Docker installed.
 You can run the container with the following parameters:
 
 ```shell
-docker run crazynds/whatsapp-api:latest [parameters]
+docker run arturcsegat/whatshttp:latest [parameters]
 ```
 
 Basic usage example:
 ```shell
-docker run -d --name whatsapp-api -p 3000:3000 crazynds/whatsapp-api:latest
+docker run -d --name whatshttp -p 3000:3000 arturcsegat/whatshttp:latest
 ```
 
 To start a shell inside the container:
 ```shell
-docker run -it --rm crazynds/whatsapp-api:latest bash
+docker run -it --rm arturcsegat/whatshttp:latest bash
 
 ```
 
@@ -63,14 +63,14 @@ docker run -it --rm crazynds/whatsapp-api:latest bash
 
 ## Find Us
 
-* [GitHub](https://github.com/crazynds/Whatsapp-Api)
-* [Docker Hub](https://hub.docker.com/r/crazynds/whatsapp-api)
+* [GitHub](https://github.com/ArturCSegat/whatshttp)
+* [Docker Hub](https://hub.docker.com/r/crazynds/whatshttp)
 
 
 ## Authors
+* [Crazynds](https://github.com/ArturCSegat)
 * [Crazynds](https://github.com/crazynds)
 
-See also the list of contributors who participated in this project.
 
 ## License
 
