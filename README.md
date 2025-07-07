@@ -66,7 +66,7 @@ docker run -it --rm arturcsegat/whatshttp:latest bash
 ## Find Us
 
 * [GitHub](https://github.com/ArturCSegat/whatshttp)
-* [Docker Hub](https://hub.docker.com/r/crazynds/whatshttp)
+* [Docker Hub](https://hub.docker.com/r/arturcsegat/whatshttp)
 
 
 ## Authors

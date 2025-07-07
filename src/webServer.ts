@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
-import sequelize from './lib/sequelize';
-import { createClient, getChatMessages, getChats, sendMessage, start_client} from './whatsapp_api';
+import { createClient, getChatMessages, getChats, sendMessage, start_client, Message} from './whatsapp_api';
 import Client from './models/client';
 import QRCode from 'qrcode';
 
@@ -10,6 +9,46 @@ server.use(express.json());
 
 export default server;
 
+function on_message(webHook: string|null) {
+    return async function (msg: Message) {
+        if (webHook === null) {
+            console.log(`${msg.from}: ${msg.body}`);
+            return false;
+        }
+        const infos = await msg.getInfo();
+        const m = {
+            'id': msg.id._serialized,
+            'author': msg.from,
+            'body': msg.body,
+            'type': msg.type,
+            'info': infos ? {
+                'deliverd': infos.delivery.length > 0,
+                'read': infos.read.length > 0,
+                'played': infos.played.length > 0
+
+            } : {},
+            'isForwarded': msg.isForwarded,
+            'timestamp': new Date(msg.timestamp * 1000),
+        };
+        try {
+            await fetch(
+                webHook,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(m)
+                });
+        }
+        catch {
+            console.error("Failed to notify webhook of message");
+            return false;
+        }
+        return true;
+    };
+}
+
 export async function createWebServer () {
 
     server.get('/client/:clientId/create',async (req: Request, res: Response) => {
@@ -17,7 +56,7 @@ export async function createWebServer () {
         let client = await Client.findByPk(id);
 
         if(!client){
-            client = await createClient(id);
+            client = await createClient(id, on_message(req.query.webHook as string || null));
         } else if (!client.get("qrcode")) {
             console.log("starting", id)
             start_client(id, client); 
