@@ -70,7 +70,7 @@ docker run -it --rm arturcsegat/whatshttp:latest bash
 
 
 ## Authors
-* [Crazynds](https://github.com/ArturCSegat)
+* [ArturCSegat](https://github.com/ArturCSegat)
 * [Crazynds](https://github.com/crazynds)
 
 
