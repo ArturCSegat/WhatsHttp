@@ -4,6 +4,7 @@ import ClientModel from '../models/client'
 import { FindOrCreateOptions, Model } from '@sequelize/core';
 import fs from 'fs/promises';
 import path from 'path';
+import * as os from 'os';
 
 export const clients = {
 } as {
@@ -289,6 +290,7 @@ export async function createClient(message_handler: ((client: Model<any, any>, m
 	}
 
 
+
 	const client = new Client({
 		authStrategy: new LocalAuth({
 			dataPath: './data/' + clientId.toString(),
@@ -296,7 +298,7 @@ export async function createClient(message_handler: ((client: Model<any, any>, m
 		}),
 		puppeteer: {
 			headless: true,
-			executablePath: '/usr/bin/google-chrome-stable',
+			executablePath: getChromePath(),
 			args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
 		}
 	});
@@ -321,46 +323,61 @@ export async function createClient(message_handler: ((client: Model<any, any>, m
 			name: client.info.pushname,
 		})
 		// ready webhook
-		const wh = await clientModel.get('webHook') as string
-		await fetch( wh, { 
+		const wh = await clientModel.get('webHook') as string ?? "";
+		try {
+			await fetch(wh, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({client: JsonClient(clientModel)})
+				body: JSON.stringify({ client: JsonClient(clientModel) })
 			});
-			clientModel.save();
-		});
+		} catch (e) {
+			console.error("webhook ready error", e);
+		}
+		clientModel.save();
+	});
 
-		client.on('message', async (msg) => {
-			if (!message_handler) {
-				message_handler = async (clientModel, msg: Message) => {
-					console.log(msg);
-					return true;
-				}
+	client.on('message', async (msg) => {
+		if (!message_handler) {
+			message_handler = async (clientModel, msg: Message) => {
+				console.log(msg);
+				return true;
 			}
+		}
 
-			const a = await message_handler(clientModel, msg);
-			if (!a) {
-				console.error("message_handler failed");
-			}
-		});
+		const a = await message_handler(clientModel, msg);
+		if (!a) {
+			console.error("message_handler failed");
+		}
+	});
 
-		client.initialize();
-		clients[clientId] = client
-		return clientModel;
-	}
+	client.initialize();
+	clients[clientId] = client
+	return clientModel;
+}
 
 
 const MIME_MAP: Record<string, string> = {
-		'image/jpeg': 'jpg',
-		'image/png': 'png',
-		'image/webp': 'webp',
-		'image/gif': 'gif',
-		'video/mp4': 'mp4',
-		'audio/ogg': 'ogg',
-		'application/pdf': 'pdf',
-	};
+	'image/jpeg': 'jpg',
+	'image/png': 'png',
+	'image/webp': 'webp',
+	'image/gif': 'gif',
+	'video/mp4': 'mp4',
+	'audio/ogg': 'ogg',
+	'application/pdf': 'pdf',
+};
 
-	function getExtension(mimetype: string): string {
-		return MIME_MAP[mimetype] || 'bin';
-	}
+function getExtension(mimetype: string): string {
+	return MIME_MAP[mimetype] || 'bin';
+}
 
+
+function getChromePath(): string {
+  switch (os.platform()) {
+    case 'win32':
+      return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    case 'darwin':
+      return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+    default:
+      return '/usr/bin/google-chrome-stable';
+  }
+}
