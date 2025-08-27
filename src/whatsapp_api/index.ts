@@ -3,6 +3,7 @@ import WAWebJS, { Client, LocalAuth, MessageMedia } from 'whatsapp-web.js';
 import ClientModel from '../models/client'
 import { FindOrCreateOptions, Model } from '@sequelize/core';
 import fs from 'fs/promises';
+import * as fs_2 from 'fs';
 import path from 'path';
 import * as os from 'os';
 
@@ -290,14 +291,13 @@ export async function createClient(message_handler: ((client: Model<any, any>, m
 	}
 
 
-
 	const client = new Client({
 		authStrategy: new LocalAuth({
 			dataPath: './data/' + clientId.toString(),
 			clientId: 'default'
 		}),
 		puppeteer: {
-			headless: true,
+			headless: false,
 			executablePath: getChromePath(),
 			args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
 		}
@@ -323,15 +323,17 @@ export async function createClient(message_handler: ((client: Model<any, any>, m
 			name: client.info.pushname,
 		})
 		// ready webhook
-		const wh = await clientModel.get('webHook') as string ?? "";
-		try {
-			await fetch(wh, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ client: JsonClient(clientModel) })
-			});
-		} catch (e) {
-			console.error("webhook ready error", e);
+		const wh = await clientModel.get('webHook') as string;
+		if (wh) {
+			try {
+				await fetch(wh, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ client: JsonClient(clientModel) })
+				});
+			} catch (e) {
+				console.error("webhook ready error", e);
+			}
 		}
 		clientModel.save();
 	});
@@ -371,13 +373,23 @@ function getExtension(mimetype: string): string {
 }
 
 
-function getChromePath(): string {
-  switch (os.platform()) {
-    case 'win32':
-      return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-    case 'darwin':
-      return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-    default:
-      return '/usr/bin/google-chrome-stable';
-  }
+function getChromePath(): string | undefined {
+	switch (os.platform()) {
+		case 'win32':
+			const win_path =  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+			if (fs_2.existsSync(win_path)) {
+				return win_path;
+			}
+		case 'darwin':
+			const darwin_path = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+			if (fs_2.existsSync(darwin_path)) {
+				return darwin_path;
+			}
+		default:
+			const linux_path = '/usr/bin/google-chrome-stable';
+			if (fs_2.existsSync(linux_path)) {
+				return linux_path;
+			}
+	}
+	return undefined; 
 }
