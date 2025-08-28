@@ -235,17 +235,3 @@ curl "http://localhost:3000/client/123/contact/456"
 curl "http://localhost:3000/client/123/contact/456?group=true"
 ```
 
-## Find Us
-
-* [GitHub](https://github.com/ArturCSegat/whatshttp)
-* [Docker Hub](https://hub.docker.com/r/arturcsegat/whatshttp)
-
-## Authors
-
-* [ArturCSegat](https://github.com/ArturCSegat)
-* [Crazynds](https://github.com/crazynds)
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE.md file for details.
-
