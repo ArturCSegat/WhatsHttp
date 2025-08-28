@@ -10,7 +10,7 @@
 	"scripts": {
 		"dev": "nodemon src/index.ts",
 		"start": "node dist/index.js",
-		"build": "tsc"
+		"build": "npx tsc"
 	},
 	"keywords": [
 		"whatsapp",
