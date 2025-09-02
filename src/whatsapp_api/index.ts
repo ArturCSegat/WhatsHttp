@@ -297,7 +297,7 @@ export async function createClient(message_handler: ((client: Model<any, any>, m
 			clientId: 'default'
 		}),
 		puppeteer: {
-			headless: false,
+			headless: true,
 			executablePath: getChromePath(),
 			args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
 		}
