@@ -1,7 +1,9 @@
 {
 	"bin": "./dist/index.js",
 	"pkg": {
-		"assets": ["node_modules/sqlite3/**/*"]
+		"assets": [
+			"node_modules/sqlite3/**/*"
+		]
 	},
 	"name": "whatshttp",
 	"version": "1.0.0",
@@ -26,7 +28,7 @@
 		"qrcode": "^1.5.4",
 		"sequelize": "^6.37.3",
 		"sqlite3": "^5.0.0",
-		"whatsapp-web.js": "^1.31.0"
+		"whatsapp-web.js": "^1.33.2"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.21",

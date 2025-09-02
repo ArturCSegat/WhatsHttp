@@ -56,7 +56,7 @@ export async function JsonChat(chat: Chat): Promise<object> {
 		id: chat.id._serialized,
 		name: chat.name,
 		unreadCount: chat.unreadCount,
-		lastMessageBody: chat.lastMessage?.body ?? null,
+		lastMessage: chat.lastMessage? await JsonMsg(chat.lastMessage) : null,
 		isArchived: chat.archived,
 		isGroup: chat.isGroup,
 		groupMembers: chat.isGroup ? get_part(chat as WAWebJS.GroupChat) : null,
